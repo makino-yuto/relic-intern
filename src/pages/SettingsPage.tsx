@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Bell, BellOff, Plus, Trash2, ChevronRight, BookOpen, Download, Shield, Info,
-  Check, Palette, ChevronDown, LogIn, LogOut, HardDrive, User, Send,
+  Check, Palette, ChevronDown, LogIn, LogOut, HardDrive, User, Send, X,
 } from 'lucide-react';
 import { NotificationTime } from '../types/diary';
 import { themeColors, ThemeColor } from '../hooks/useTheme';
@@ -18,7 +18,13 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ colorId, sat, lit, onSelectColor, onSetSat, onSetLit }: SettingsPageProps) {
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user, signIn, signUp, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   const {
     permission,
     notifications,
@@ -73,9 +79,25 @@ export default function SettingsPage({ colorId, sat, lit, onSelectColor, onSetSa
     setTimeout(() => setSavedFeedback(false), 2000);
   };
 
+  const handleAuthSubmit = async () => {
+    if (!authEmail || !authPassword) return;
+    setAuthLoading(true);
+    setAuthError('');
+    const fn = authMode === 'signin' ? signIn : signUp;
+    const { error } = await fn(authEmail, authPassword);
+    setAuthLoading(false);
+    if (error) {
+      setAuthError(error);
+    } else {
+      setShowAuthModal(false);
+      setAuthEmail('');
+      setAuthPassword('');
+    }
+  };
+
   const handleBackup = async () => {
     if (!user) {
-      await signInWithGoogle();
+      setShowAuthModal(true);
       return;
     }
     setBackupStatus('running');
@@ -147,7 +169,7 @@ export default function SettingsPage({ colorId, sat, lit, onSelectColor, onSetSa
               </>
             ) : (
               <button
-                onClick={signInWithGoogle}
+                onClick={() => { setShowAuthModal(true); setAuthMode('signin'); }}
                 className="flex items-center justify-between w-full px-4 py-3.5 hover:bg-muted/20 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -155,7 +177,7 @@ export default function SettingsPage({ colorId, sat, lit, onSelectColor, onSetSa
                     <LogIn size={16} className="text-muted-foreground" />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-medium text-foreground">Google でログイン</p>
+                    <p className="text-sm font-medium text-foreground">ログイン / 新規登録</p>
                     <p className="text-xs text-muted-foreground">日記をクラウドに同期・バックアップ</p>
                   </div>
                 </div>
@@ -511,12 +533,12 @@ export default function SettingsPage({ colorId, sat, lit, onSelectColor, onSetSa
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-medium text-foreground">
-                    Google ドライブにバックアップ
+                    クラウドにバックアップ
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {user
-                      ? 'Googleドライブに日記データを保存'
-                      : 'Googleアカウントでログインが必要です'}
+                      ? 'クラウドに日記データを保存'
+                      : 'ログインが必要です'}
                   </p>
                 </div>
               </div>
@@ -587,6 +609,67 @@ export default function SettingsPage({ colorId, sat, lit, onSelectColor, onSetSa
           </button>
         </div>
       </div>
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}>
+          <div
+            className="w-full max-w-lg bg-card rounded-t-3xl p-6 pb-10 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-foreground">
+                {authMode === 'signin' ? 'ログイン' : '新規登録'}
+              </h2>
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-muted/50 hover:bg-muted transition-colors"
+              >
+                <X size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">メールアドレス</label>
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={e => setAuthEmail(e.target.value)}
+                  placeholder="example@email.com"
+                  className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">パスワード</label>
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={e => setAuthPassword(e.target.value)}
+                  placeholder="6文字以上"
+                  className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  onKeyDown={e => e.key === 'Enter' && handleAuthSubmit()}
+                />
+              </div>
+              {authError && (
+                <p className="text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2">{authError}</p>
+              )}
+              <button
+                onClick={handleAuthSubmit}
+                disabled={authLoading}
+                className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60"
+              >
+                {authLoading ? '処理中...' : authMode === 'signin' ? 'ログイン' : '登録する'}
+              </button>
+              <button
+                onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthError(''); }}
+                className="w-full py-2 text-sm text-primary font-medium hover:opacity-80 transition-opacity"
+              >
+                {authMode === 'signin' ? 'アカウントを作成する' : 'すでにアカウントをお持ちの方'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

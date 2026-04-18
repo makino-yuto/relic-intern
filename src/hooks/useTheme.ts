@@ -42,28 +42,28 @@ function applyTheme(color: ThemeColor, sat: number, lit: number) {
   const adjL = clamp(color.l + litDelta, 8, 62);
 
   const root = document.documentElement;
-  const isDark = adjL < 28;
 
   root.style.setProperty('--primary',              `${color.h} ${Math.round(adjS)}% ${Math.round(adjL)}%`);
   root.style.setProperty('--ring',                 `${color.h} ${Math.round(adjS)}% ${Math.round(adjL)}%`);
   root.style.setProperty('--accent',               `${color.h} ${Math.round(adjS * 0.7)}% ${Math.round(Math.min(adjL + 16, 78))}%`);
+  root.style.setProperty('--secondary',            `${color.h} 30% 90%`);
+  root.style.setProperty('--secondary-foreground', `${color.h} 40% 22%`);
   root.style.setProperty('--chart-1',              `${color.h} ${Math.round(adjS)}% ${Math.round(adjL)}%`);
   root.style.setProperty('--chart-2',              `${color.h} ${Math.round(adjS * 0.75)}% ${Math.round(Math.min(adjL + 14, 78))}%`);
 
   const isBright = adjL > 56;
   root.style.setProperty('--primary-foreground', isBright ? `${color.h} 30% 14%` : `0 0% 100%`);
 
-  const bgL = isDark ? clamp(adjL + 10, 18, 34) : clamp(adjL + 40, 84, 93);
-  const bgS = isDark ? clamp(adjS * 0.22, 12, 24) : clamp(adjS * 0.32, 18, 34);
+  const isDark = adjL < 28;
 
-  root.style.setProperty('--secondary',            `${color.h} ${Math.round(Math.min(bgS + 4, 38))}% ${Math.round(Math.min(bgL + 3, 94))}%`);
-  root.style.setProperty('--secondary-foreground', `${color.h} ${isDark ? 24 : 34}% ${isDark ? 88 : 22}%`);
+  const bgL = isDark ? adjL + 8 : Math.min(adjL + 44, 94);
+  const bgS = isDark ? adjS * 0.20 : Math.min(adjS * 0.55, 50);
 
   root.style.setProperty('--background', `${color.h} ${Math.round(bgS)}% ${Math.round(bgL)}%`);
-  root.style.setProperty('--muted',      `${color.h} ${Math.round(Math.min(bgS * 1.15, 40))}% ${Math.round(isDark ? bgL + 5 : bgL - 3)}%`);
-  root.style.setProperty('--border',     `${color.h} ${Math.round(Math.min(bgS * 1.45, 46))}% ${Math.round(isDark ? bgL + 10 : bgL - 9)}%`);
-  root.style.setProperty('--input',      `${color.h} ${Math.round(Math.min(bgS * 1.45, 46))}% ${Math.round(isDark ? bgL + 10 : bgL - 9)}%`);
-  root.style.setProperty('--card',       `${color.h} ${Math.round(Math.max(bgS * 0.7, 12))}% ${Math.round(isDark ? adjL + 12 : Math.min(bgL + 5, 96))}%`);
+  root.style.setProperty('--muted',      `${color.h} ${Math.round(bgS * 0.85)}% ${Math.round(bgL - (isDark ? -4 : 4))}%`);
+  root.style.setProperty('--border',     `${color.h} ${Math.round(bgS * 0.7)}% ${Math.round(bgL - (isDark ? -12 : 10))}%`);
+  root.style.setProperty('--input',      `${color.h} ${Math.round(bgS * 0.7)}% ${Math.round(bgL - (isDark ? -12 : 10))}%`);
+  root.style.setProperty('--card',       `${color.h} ${Math.round(bgS * 0.18)}% ${isDark ? Math.round(adjL + 10) : Math.min(bgL + 8, 99)}%`);
 
   const fgL = isDark ? 90 : Math.max(adjL - 42, 10);
   root.style.setProperty('--foreground',       isDark ? `${color.h} 8% 90%`  : `${color.h} 22% ${Math.round(fgL)}%`);
