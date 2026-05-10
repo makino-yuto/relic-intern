@@ -7,11 +7,9 @@
 
 本アプリは、「株式会社Relic 2028年卒向け就活イベント」にて制作したプロトタイプであり、将来的に Android ネイティブアプリとしてリリースすることを前提に設計・開発を行いました。
 
-Web Application Repository:
-[relic-intern Repository](https://github.com/makino-yuto/relic-intern)
 
-Android Native App Repository:
-[makino-yuto GitHub](https://github.com/makino-yuto)
+アンドロイドアプリのリポジトリ:
+[diary_app](https://github.com/makino-yuto/diary_app)
 
 
 ## Features
