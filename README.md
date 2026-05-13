@@ -9,8 +9,6 @@
 
 1,2時間で作る感じだったので、ほとんど中身がないです。
 
-アンドロイドアプリのリポジトリ:
-[diary_app](https://github.com/makino-yuto/diary_app)
 
 
 ## Tech Stack
